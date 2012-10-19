@@ -115,12 +115,14 @@ def processLog(testLog, gcnoPath, options):
   inBase64 = False
   idxBase64 = 0
   blobsBase64 = []
-  skipLines = 0
+  skipLines = False
 
   for line in iter(gunzipProc.stdout.readline,''):
-    if skipLines > 0:
-      skipLines -= 1
-      continue
+    if skipLines:
+      if line.find(':') >= 0:
+        continue
+      else:
+        skipLines = False
 
     if inBase64:
       if delimiter in line:
@@ -131,7 +133,7 @@ def processLog(testLog, gcnoPath, options):
         matchWarn = re.match("^(.*?)WARNING:.*$", line)
         if matchWarn != None:
           line = matchWarn.group(1)
-          skipLines = 7 # Skip next 7 lines
+          skipLines = True # Skip next lines containing colon
 
         blobsBase64[-1].append(line)
     elif delimiter in line:
