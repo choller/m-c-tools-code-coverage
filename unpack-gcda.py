@@ -171,6 +171,9 @@ def processLog(testLog, gcnoPath, options):
       os.chdir(dirList[0])
       dirList = os.listdir(".")
 
+    # Remove possible xpcshell directory (self-tests)
+    subprocess.check_call(['rm', '-Rf', "testing/xpcshell"])
+
     # Unpack gcno tarball
     subprocess.check_call(['tar', '-xjf', gcnoPath])
 
