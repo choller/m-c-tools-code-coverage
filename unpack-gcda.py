@@ -14,12 +14,11 @@ testFileToName = {
   '.*-mochitests-(\d)-.*\.txt\.gz$' : 'mochitests-$1',
   '.*-mochitest-other-.*\.txt\.gz$' : [
                                         'mochitest-chrome', 
-                                        'mochitest-browser-chrome', 
                                         'mochitest-a11y',
                                         'mochitest-ipcplugins'
                                       ],
-  #'.*-(linux|macosx).*\.txt\.gz$' : 'check'    
-  '.*-(linux|macosx).*-try\d+-build\d+\.txt\.gz$' : 'check'
+  '.*-mochitest-browser-chrome-.*\.txt\.gz$' : 'mochitest-browser-chrome',
+  '.*-(linux|macosx).*-try\d+-build\d+\.txt\.gz$' : [ 'check-1', 'check-2', 'check-3', 'check-4' ]
 }
 
 def parseOpts():
