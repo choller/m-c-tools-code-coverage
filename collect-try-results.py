@@ -229,14 +229,13 @@ def downloadTestResults(ftpName, outdir):
 
 def main(argv):
   parser = OptionParser('Usage: %prog [options] username revision')
-  parser.disable_interspersed_args()
   parser.add_option('-o', '--output-dir', dest='outputDir',
                     default="/tmp/output",
                     help="Output directory for .info files")
   (options, args) = parser.parse_args(argv)
   if len(args) < 3:
     parser.error('Not enough arguments')
-
+  
   downloadTestResults(args[1] + '-' + args[2], options.outputDir)
 
 if __name__ == '__main__':
