@@ -51,6 +51,10 @@ TestConfig['.*-mochitest-other-.*\\.txt\\.gz'] = {
   'symbol': 'M-oth',
   'tbpl': 'mochitest-other'
 }
+TestConfig['.*-mochitest-browser-chrome-.*\\.txt\\.gz'] = {
+  'symbol': 'M-b-c',
+  'tbpl': 'mochitest-browser-chrome'
+}
 TestConfig['.*-reftest-.*\\.txt\\.gz'] = {
   'symbol': 'R-R',
   'tbpl': 'reftest'
