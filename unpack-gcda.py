@@ -185,11 +185,9 @@ def processLog(testLog, gcnoPath, options):
     preFile = os.path.join(unpackDir, "test-" + str(idx) + "-pre.info")
 
     # Run lcov and ccov
-    #subprocess.check_call([ 'lcov', '-c', '-d', '.', '-o', preFile, '--gcov-tool=gcov-' + options.gcovVersion, '-t', testName[idx] ], stdout=logFile, stderr=logFile)
     subprocess.check_call([ 'lcov', '-c', '-d', '.', '-o', os.path.join(outDir, testName[idx] + '.info.pre'), '--gcov-tool=gcov-' + options.gcovVersion, '-t', testName[idx] ], stdout=logFile, stderr=logFile)
     #print "Running " + options.ccovPath
     #subprocess.check_call([ options.ccovPath, '-a', preFile, '-e', '/builds/*', '-o', os.path.join(outDir, testName[idx] + '.info') ], stdout=logFile, stderr=logFile)
-    #subprocess.check_call([ options.ccovPath, preFile, '-o', os.path.join(outDir, testName[idx] + '.info') ], stdout=logFile, stderr=logFile)
 
 
     os.chdir(oldcwd)
