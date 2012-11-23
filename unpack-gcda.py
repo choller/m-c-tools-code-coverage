@@ -11,15 +11,14 @@ from optparse import OptionParser
 # Rules to translate log filenames to test suite names
 testFileToName = {
   '.*-(crashtest|jsreftest|reftest|xpcshell)-.*\.txt\.gz$' : '$1',
-  '.*-mochitests-(\d)-.*\.txt\.gz$' : 'mochitests-$1',
+  '.*-mochitest-(\d)-.*\.txt\.gz$' : 'mochitest-$1',
   '.*-mochitest-other-.*\.txt\.gz$' : [
                                         'mochitest-chrome', 
-                                        'mochitest-browser-chrome', 
                                         'mochitest-a11y',
                                         'mochitest-ipcplugins'
                                       ],
-  #'.*-(linux|macosx).*\.txt\.gz$' : 'check'    
-  '.*-(linux|macosx).*-try\d+-build\d+\.txt\.gz$' : 'check'
+  '.*-mochitest-browser-chrome-.*\.txt\.gz$' : 'mochitest-browser-chrome',
+  '.*-(linux|macosx).*-try\d+-build\d+\.txt\.gz$' : [ 'check-1', 'check-2', 'check-3', 'check-4' ]
 }
 
 def parseOpts():
@@ -116,12 +115,14 @@ def processLog(testLog, gcnoPath, options):
   inBase64 = False
   idxBase64 = 0
   blobsBase64 = []
-  skipLines = 0
+  skipLines = False
 
   for line in iter(gunzipProc.stdout.readline,''):
-    if skipLines > 0:
-      skipLines -= 1
-      continue
+    if skipLines:
+      if line.find(':') >= 0:
+        continue
+      else:
+        skipLines = False
 
     if inBase64:
       if delimiter in line:
@@ -132,7 +133,7 @@ def processLog(testLog, gcnoPath, options):
         matchWarn = re.match("^(.*?)WARNING:.*$", line)
         if matchWarn != None:
           line = matchWarn.group(1)
-          skipLines = 7 # Skip next 7 lines
+          skipLines = True # Skip next lines containing colon
 
         blobsBase64[-1].append(line)
     elif delimiter in line:
@@ -145,6 +146,11 @@ def processLog(testLog, gcnoPath, options):
 
   # Process every base64 block we extracted
   for idx, blob in enumerate(blobsBase64):
+    if (testName[idx].find("IGNORE") >= 0):
+      if options.debug:
+        print "Ignoring blob at index %d (test name %s)" % (idx, testName[idx])
+      continue
+
     # Write base64 blob to file
     outFilename = os.path.join(unpackDir, "results-" + str(idx) + ".bin")
     outFile = open(outFilename, "w")
@@ -170,14 +176,21 @@ def processLog(testLog, gcnoPath, options):
       os.chdir(dirList[0])
       dirList = os.listdir(".")
 
+    # Remove possible xpcshell directory (self-tests)
+    subprocess.check_call(['rm', '-Rf', "testing/xpcshell"])
+
     # Unpack gcno tarball
     subprocess.check_call(['tar', '-xjf', gcnoPath])
 
     preFile = os.path.join(unpackDir, "test-" + str(idx) + "-pre.info")
 
     # Run lcov and ccov
-    subprocess.check_call([ 'lcov', '-c', '-d', '.', '-o', preFile, '--gcov-tool=gcov-' + options.gcovVersion, '-t', testName[idx] ], stdout=logFile, stderr=logFile)
-    subprocess.check_call([ options.ccovPath, '-a', preFile, '-e', '/builds/*', '-o', os.path.join(outDir, testName[idx] + '.info') ], stdout=logFile, stderr=logFile)
+    #subprocess.check_call([ 'lcov', '-c', '-d', '.', '-o', preFile, '--gcov-tool=gcov-' + options.gcovVersion, '-t', testName[idx] ], stdout=logFile, stderr=logFile)
+    subprocess.check_call([ 'lcov', '-c', '-d', '.', '-o', os.path.join(outDir, testName[idx] + '.info.pre'), '--gcov-tool=gcov-' + options.gcovVersion, '-t', testName[idx] ], stdout=logFile, stderr=logFile)
+    #print "Running " + options.ccovPath
+    #subprocess.check_call([ options.ccovPath, '-a', preFile, '-e', '/builds/*', '-o', os.path.join(outDir, testName[idx] + '.info') ], stdout=logFile, stderr=logFile)
+    #subprocess.check_call([ options.ccovPath, preFile, '-o', os.path.join(outDir, testName[idx] + '.info') ], stdout=logFile, stderr=logFile)
+
 
     os.chdir(oldcwd)
 
