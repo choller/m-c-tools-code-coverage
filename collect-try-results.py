@@ -27,29 +27,33 @@ TestConfig['.*-jsreftest-.*\\.txt\\.gz'] = {
   'symbol': 'R-J',
   'tbpl': 'jsreftest'
 }
-TestConfig['.*-mochitests-1-.*\\.txt\\.gz'] = {
+TestConfig['.*-mochitest-1-.*\\.txt\\.gz'] = {
   'symbol': 'M-1',
-  'tbpl': 'mochitests-1'
+  'tbpl': 'mochitest-1'
 }
-TestConfig['.*-mochitests-2-.*\\.txt\\.gz'] = {
+TestConfig['.*-mochitest-2-.*\\.txt\\.gz'] = {
   'symbol': 'M-2',
-  'tbpl': 'mochitests-2'
+  'tbpl': 'mochitest-2'
 }
-TestConfig['.*-mochitests-3-.*\\.txt\\.gz'] = {
+TestConfig['.*-mochitest-3-.*\\.txt\\.gz'] = {
   'symbol': 'M-3',
-  'tbpl': 'mochitests-3'
+  'tbpl': 'mochitest-3'
 }
-TestConfig['.*-mochitests-4-.*\\.txt\\.gz'] = {
+TestConfig['.*-mochitest-4-.*\\.txt\\.gz'] = {
   'symbol': 'M-4',
-  'tbpl': 'mochitests-4'
+  'tbpl': 'mochitest-4'
 }
-TestConfig['.*-mochitests-5-.*\\.txt\\.gz'] = {
+TestConfig['.*-mochitest-5-.*\\.txt\\.gz'] = {
   'symbol': 'M-5',
-  'tbpl': 'mochitests-5'
+  'tbpl': 'mochitest-5'
 }
 TestConfig['.*-mochitest-other-.*\\.txt\\.gz'] = {
   'symbol': 'M-oth',
   'tbpl': 'mochitest-other'
+}
+TestConfig['.*-mochitest-browser-chrome-.*\\.txt\\.gz'] = {
+  'symbol': 'M-b-c',
+  'tbpl': 'mochitest-browser-chrome'
 }
 TestConfig['.*-reftest-.*\\.txt\\.gz'] = {
   'symbol': 'R-R',
@@ -229,14 +233,13 @@ def downloadTestResults(ftpName, outdir):
 
 def main(argv):
   parser = OptionParser('Usage: %prog [options] username revision')
-  parser.disable_interspersed_args()
   parser.add_option('-o', '--output-dir', dest='outputDir',
                     default="/tmp/output",
                     help="Output directory for .info files")
   (options, args) = parser.parse_args(argv)
   if len(args) < 3:
     parser.error('Not enough arguments')
-
+  
   downloadTestResults(args[1] + '-' + args[2], options.outputDir)
 
 if __name__ == '__main__':
