@@ -1,10 +1,15 @@
+
 # HG changeset patch
-# Parent 21a815b9f4c73757abcdc6ddc1415e5333cfea9c
+# User Christian Holler <choller@mozilla.com>
+# Date 1346105753 18000
+# Node ID 158bd1efcec81d144f40db55385057c3bd7321cd
+# Parent 87703fb491e0669aaba04707ba5354a4d25d9415
+try: -b d -e -p linux64 -u reftest,crashtest,xpcshell,jsreftest,mochitests -t none
 
 diff --git a/Makefile.in b/Makefile.in
 --- a/Makefile.in
 +++ b/Makefile.in
-@@ -220,8 +220,13 @@ libs:: .gdbinit
+@@ -221,8 +221,16 @@ libs:: .gdbinit
  # Look for R_386_PC32 relocations in shared libs, these
  # break x86_64 builds and SELinux users.
  ifeq ($(OS_TARGET)_$(TARGET_XPCOM_ABI),Linux_x86-gcc3)
@@ -15,14 +20,16 @@ diff --git a/Makefile.in b/Makefile.in
  js/src/Makefile: subsrcdir := js/src
 +
 +check::
++	@pwd
++	@find -name '*.gcda'
 +	@echo '~!@!~!@!~!@!~!@!~!@!~!@!~!@!~!@!~'
-+	@find -name '*.gcda' | xargs tar -cj | base64
++	@find -name '*.gcda' -print0 | tar -cj --null -T - | base64
 +	@echo '~!@!~!@!~!@!~!@!~!@!~!@!~!@!~!@!~'
++
 diff --git a/browser/config/mozconfigs/linux32/debug b/browser/config/mozconfigs/linux32/debug
 --- a/browser/config/mozconfigs/linux32/debug
 +++ b/browser/config/mozconfigs/linux32/debug
-@@ -17,8 +17,13 @@ mk_add_options MOZ_MAKE_FLAGS="-j4"
- #Use ccache
+@@ -18,9 +18,14 @@ mk_add_options MOZ_MAKE_FLAGS="-j4"
  ac_add_options --with-ccache=/usr/bin/ccache
  
  # Treat warnings as errors in directories with FAIL_ON_WARNINGS.
@@ -30,16 +37,17 @@ diff --git a/browser/config/mozconfigs/linux32/debug b/browser/config/mozconfigs
  
  # Package js shell.
  export MOZ_PACKAGE_JSSHELL=1
-+
+ 
 +# Enable code coverage
 +export CFLAGS="-fprofile-arcs -ftest-coverage"
 +export CXXFLAGS="-fprofile-arcs -ftest-coverage"
 +export LDFLAGS="-fprofile-arcs -ftest-coverage -lgcov"
++
+ . "$topsrcdir/build/mozconfig.common.override"
 diff --git a/browser/config/mozconfigs/linux32/nightly b/browser/config/mozconfigs/linux32/nightly
 --- a/browser/config/mozconfigs/linux32/nightly
 +++ b/browser/config/mozconfigs/linux32/nightly
-@@ -31,8 +31,14 @@ ac_add_options --enable-warnings-as-erro
- # Enable parallel compiling
+@@ -32,9 +32,15 @@ ac_add_options --enable-warnings-as-erro
  mk_add_options MOZ_MAKE_FLAGS="-j4"
  
  # Use ccache
@@ -47,16 +55,28 @@ diff --git a/browser/config/mozconfigs/linux32/nightly b/browser/config/mozconfi
  
  # Package js shell.
  export MOZ_PACKAGE_JSSHELL=1
-+
+ 
 +# Enable code coverage
 +ac_add_options --disable-debug --disable-optimize
 +export CFLAGS="-fprofile-arcs -ftest-coverage"
 +export CXXFLAGS="-fprofile-arcs -ftest-coverage"
 +export LDFLAGS="-fprofile-arcs -ftest-coverage -lgcov"
++
+ . "$topsrcdir/build/mozconfig.common.override"
 diff --git a/browser/config/mozconfigs/linux64/debug b/browser/config/mozconfigs/linux64/debug
 --- a/browser/config/mozconfigs/linux64/debug
 +++ b/browser/config/mozconfigs/linux64/debug
-@@ -9,16 +9,21 @@ ENABLE_MARIONETTE=1
+@@ -1,26 +1,33 @@
+ ac_add_options --enable-debug
++ac_add_options --enable-optimize
+ ac_add_options --enable-trace-malloc
+ ac_add_options --enable-signmar
++#ac_add_options --disable-warnings-as-errors
+ ENABLE_MARIONETTE=1
+ 
+ . $topsrcdir/build/unix/mozconfig.linux
+ 
+ # Avoid dependency on libstdc++ 4.5
  ac_add_options --enable-stdcxx-compat
  
  # Needed to enable breakpad in application.ini
@@ -75,16 +95,17 @@ diff --git a/browser/config/mozconfigs/linux64/debug b/browser/config/mozconfigs
  
  # Package js shell.
  export MOZ_PACKAGE_JSSHELL=1
-+
+ 
 +# Enable code coverage
-+export CFLAGS="-fprofile-arcs -ftest-coverage"
-+export CXXFLAGS="-fprofile-arcs -ftest-coverage"
++export CFLAGS="-fprofile-arcs -ftest-coverage -Wno-error"
++export CXXFLAGS="-fprofile-arcs -ftest-coverage -Wno-error"
 +export LDFLAGS="-fprofile-arcs -ftest-coverage -lgcov"
++
+ . "$topsrcdir/build/mozconfig.common.override"
 diff --git a/browser/config/mozconfigs/linux64/nightly b/browser/config/mozconfigs/linux64/nightly
 --- a/browser/config/mozconfigs/linux64/nightly
 +++ b/browser/config/mozconfigs/linux64/nightly
-@@ -31,8 +31,14 @@ ac_add_options --enable-warnings-as-erro
- # Enable parallel compiling
+@@ -32,9 +32,15 @@ ac_add_options --enable-warnings-as-erro
  mk_add_options MOZ_MAKE_FLAGS="-j4"
  
  # Use ccache
@@ -92,16 +113,18 @@ diff --git a/browser/config/mozconfigs/linux64/nightly b/browser/config/mozconfi
  
  # Package js shell.
  export MOZ_PACKAGE_JSSHELL=1
-+
+ 
 +# Enable code coverage
 +ac_add_options --disable-debug --disable-optimize
 +export CFLAGS="-fprofile-arcs -ftest-coverage"
 +export CXXFLAGS="-fprofile-arcs -ftest-coverage"
 +export LDFLAGS="-fprofile-arcs -ftest-coverage -lgcov"
++
+ . "$topsrcdir/build/mozconfig.common.override"
 diff --git a/build/automation.py.in b/build/automation.py.in
 --- a/build/automation.py.in
 +++ b/build/automation.py.in
-@@ -1010,16 +1010,18 @@ user_pref("camino.use_system_proxy_setti
+@@ -1066,16 +1066,18 @@ user_pref("camino.use_system_proxy_setti
  
      # Do a final check for zombie child processes.
      self.checkForZombies(processLog)
@@ -141,7 +164,7 @@ diff --git a/build/automationutils.py b/build/automationutils.py
    # gdb requires that you supply the '--args' flag in order to pass arguments
    # after the executable name to the executable.
    "gdb": {
-@@ -412,8 +413,32 @@ def wrapCommand(cmd):
+@@ -412,8 +413,34 @@ def wrapCommand(cmd):
    binary.
    """
    if platform.system() == "Darwin" and \
@@ -156,13 +179,15 @@ diff --git a/build/automationutils.py b/build/automationutils.py
 +  path = os.environ['GCOV_PREFIX']
 +  import tarfile
 +  fobj = open(os.tmpnam(), 'wb')
-+  tar = tarfile.TarFile.bz2open(fobj.name, mode='w', fileobj=fobj)
++  tar = tarfile.TarFile.open(fobj.name, mode='w:bz2', fileobj=fobj)
 +  for dirpath, dirnames, filenames in os.walk(path):
 +    gcdafiles = (f for f in filenames if f[-5:] == '.gcda')
 +    for filename in gcdafiles:
 +      fullname = os.path.join(dirpath, filename)
 +      tar.add(fullname, arcname=os.path.normpath(fullname))
++      os.remove(fullname)
 +  tar.close()
++  fobj.close()
 +  # Replay the tar file in base64 to output
 +  fobj = open(fobj.name, 'rb')
 +  import base64
@@ -177,7 +202,7 @@ diff --git a/build/automationutils.py b/build/automationutils.py
 diff --git a/js/src/configure.in b/js/src/configure.in
 --- a/js/src/configure.in
 +++ b/js/src/configure.in
-@@ -4483,16 +4483,17 @@ if test "$JS_HAS_CTYPES" -a -z "$MOZ_NAT
+@@ -4437,16 +4437,17 @@ if test "$JS_HAS_CTYPES" -a -z "$MOZ_NAT
    # Run the libffi 'configure' script.
    ac_configure_args="--disable-shared --enable-static --disable-raw-api"
    if test "$MOZ_DEBUG"; then
@@ -198,7 +223,7 @@ diff --git a/js/src/configure.in b/js/src/configure.in
 diff --git a/testing/xpcshell/runxpcshelltests.py b/testing/xpcshell/runxpcshelltests.py
 --- a/testing/xpcshell/runxpcshelltests.py
 +++ b/testing/xpcshell/runxpcshelltests.py
-@@ -834,16 +834,20 @@ class XPCShellTests(object):
+@@ -940,16 +940,20 @@ class XPCShellTests(object):
          else:
            xunitResults.append(xunitResult)
            break
@@ -222,7 +247,7 @@ diff --git a/testing/xpcshell/runxpcshelltests.py b/testing/xpcshell/runxpcshell
 diff --git a/toolkit/mozapps/installer/packager.mk b/toolkit/mozapps/installer/packager.mk
 --- a/toolkit/mozapps/installer/packager.mk
 +++ b/toolkit/mozapps/installer/packager.mk
-@@ -867,16 +867,17 @@ endif # MOZ_POST_STAGING_CMD
+@@ -853,16 +853,17 @@ endif # MOZ_POST_STAGING_CMD
  ifndef LIBXUL_SDK
  ifdef MOZ_PACKAGE_JSSHELL
  # Package JavaScript Shell
@@ -233,10 +258,10 @@ diff --git a/toolkit/mozapps/installer/packager.mk b/toolkit/mozapps/installer/p
  endif # LIBXUL_SDK
 +	find $(DEPTH) -name '*.gcno' | tar -cjf $(DIST)/$(STAGEPATH)$(MOZ_PKG_DIR)$(_BINPATH)/gcno.tar.bz2 -T -
  
- make-package-internal: stage-package $(PACKAGE_XULRUNNER) make-sourcestamp-file
+ prepare-package: stage-package
+ 	cd $(DIST) && $(PREPARE_PACKAGE)
+ 
+ make-package-internal: prepare-package make-sourcestamp-file
  	@echo "Compressing..."
  	cd $(DIST) && $(MAKE_PACKAGE)
  
- ifdef MOZ_FAST_PACKAGE
- MAKE_PACKAGE_DEPS = $(wildcard $(subst * , ,$(addprefix $(DIST)/bin/,$(shell $(PYTHON) $(topsrcdir)/toolkit/mozapps/installer/packager-deps.py $(MOZ_PKG_MANIFEST)))))
- else
